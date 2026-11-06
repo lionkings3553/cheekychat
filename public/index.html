@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CheekyChat AI - Uncensored Roleplay</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              pink: '#ec4899',
+              purple: '#8b5cf6',
+              dark: '#090d16',
+              card: '#121927',
+              border: '#1f293d'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-[#090d16] text-slate-100 h-screen w-screen overflow-hidden selection:bg-pink-500 selection:text-white flex">
+
+  <!-- ============================================================ -->
+  <!-- LEFT NAVIGATION SIDEBAR -->
+  <!-- ============================================================ -->
+  <aside class="w-16 sm:w-20 flex-shrink-0 glass-panel border-r border-slate-800/80 flex flex-col items-center py-4 justify-between z-30 bg-[#070a12]/95">
+    
+    <!-- Top: Logo & Main Actions -->
+    <div class="flex flex-col items-center gap-5 w-full">
+      <!-- Logo Flame Icon -->
+      <button onclick="app.showGallery()" class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-pink-500/30 cursor-pointer active:scale-95 transition hover:brightness-110" title="CheekyChat Home">
+        <i data-lucide="flame" class="w-6 h-6 text-white fill-white"></i>
+      </button>
+
+      <!-- Navigation Icons -->
+      <div class="flex flex-col items-center gap-3 w-full px-2">
+        <!-- Explore Gallery Icon -->
+        <button id="nav-btn-gallery" onclick="app.showGallery()" class="w-11 h-11 rounded-xl flex items-center justify-center text-pink-400 bg-pink-500/20 border border-pink-500/40 transition hover:scale-105" title="Explore Characters">
+          <i data-lucide="layout-grid" class="w-5 h-5"></i>
+        </button>
+
+        <!-- Create Character Icon Button -->
+        <button id="nav-btn-create" onclick="app.openCreateCharacterModal()" class="w-11 h-11 rounded-xl flex items-center justify-center text-slate-400 hover:text-pink-400 hover:bg-slate-800/80 border border-transparent hover:border-slate-700 transition hover:scale-105 group" title="Create Character">
+          <i data-lucide="plus-circle" class="w-5 h-5 group-hover:text-pink-400 transition"></i>
+        </button>
+      </div>
+
+      <!-- Divider -->
+      <div class="w-8 h-[1px] bg-slate-800"></div>
+
+      <!-- Recent Active Chats (Avatars) -->
+      <div class="flex flex-col items-center gap-2.5 w-full overflow-y-auto max-h-60 scrollbar-none px-2" id="sidebar-recent-chats" title="Recent Chats">
+        <!-- Injected dynamically by JS -->
+      </div>
+    </div>
+
+    <!-- Bottom: Settings & AI Status -->
+    <div class="flex flex-col items-center gap-2.5">
+      <!-- Settings Modal Button -->
+      <button onclick="app.openSettingsModal()" class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-400 hover:text-pink-400 hover:border-pink-500/40 transition cursor-pointer" title="AI Settings (Local RTX / Cloud APIs)">
+        <i data-lucide="settings" class="w-4 h-4"></i>
+      </button>
+
+      <!-- AI Status Indicator -->
+      <div id="sidebar-ai-indicator" class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center relative cursor-pointer hover:border-pink-500/40 transition" onclick="app.openSettingsModal()" title="AI Status (Click to configure)">
+        <i data-lucide="cpu" class="w-4 h-4 text-slate-400"></i>
+        <span id="sidebar-status-dot" class="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]"></span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================================================ -->
+  <!-- MAIN APP CONTAINER -->
+  <!-- ============================================================ -->
+  <div class="flex-1 flex flex-col h-full overflow-hidden">
+    
+    <!-- TOP HEADER -->
+    <header class="h-14 glass-panel border-b border-slate-800/80 flex items-center justify-between px-4 sm:px-6 bg-[#090d16]/90 flex-shrink-0 z-20">
+      <div class="flex items-center gap-3">
+        <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-pink-400 via-fuchsia-400 to-purple-400 bg-clip-text text-transparent cursor-pointer" onclick="app.showGallery()">
+          CheekyChat
+        </h1>
+        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-400 border border-pink-500/30">
+          UNCENSORED 18+
+        </span>
+      </div>
+
+      <!-- Right Header Actions -->
+      <div class="flex items-center gap-3">
+        <!-- AI status badge (Click to configure/switch) -->
+        <button onclick="app.openSettingsModal()" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-900/90 border border-slate-800 hover:border-pink-500/40 text-xs text-slate-300 transition cursor-pointer group" title="Click to Switch Local / Cloud Provider">
+          <span class="w-2 h-2 rounded-full bg-emerald-400" id="header-status-dot"></span>
+          <span id="header-status-text" class="group-hover:text-pink-300 transition font-medium">AI Online (Local RTX)</span>
+          <i data-lucide="sliders" class="w-3 h-3 text-slate-500 group-hover:text-pink-400 transition ml-0.5"></i>
+        </button>
+
+        <!-- Top Header Create Character Button (Icon + Label) -->
+        <button onclick="app.openCreateCharacterModal()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-medium text-xs hover:from-pink-600 hover:to-purple-700 transition shadow-md shadow-pink-500/20 active:scale-95" title="Create New Character">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Create</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- CONTENT WRAPPER -->
+    <div class="flex-1 overflow-hidden relative">
+      
+      <!-- ============================================================ -->
+      <!-- GALLERY VIEW: CHARACTER EXPLORER -->
+      <!-- ============================================================ -->
+      <div id="view-gallery" class="h-full overflow-y-auto px-4 sm:px-8 py-6">
+        
+        <!-- Hero Banner -->
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-900/40 via-pink-900/30 to-indigo-950/50 border border-purple-500/20 p-6 sm:p-7 mb-6 backdrop-blur-sm">
+          <div class="relative z-10 max-w-2xl">
+            <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white mb-2">
+              Chat Without Limits. <span class="bg-gradient-to-r from-pink-400 to-purple-300 bg-clip-text text-transparent">Zero Censorship.</span>
+            </h2>
+            <p class="text-slate-300 text-xs sm:text-sm leading-relaxed mb-4">
+              Running 100% locally on your RTX GPU. Choose a persona below, or click the <strong class="text-pink-400">+</strong> icon in the sidebar to create your own!
+            </p>
+            <div class="flex flex-wrap gap-2 text-xs text-slate-400">
+              <span class="flex items-center gap-1 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-700/50">
+                <i data-lucide="lock" class="w-3.5 h-3.5 text-emerald-400"></i> 100% Private & Local
+              </span>
+              <span class="flex items-center gap-1 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-700/50">
+                <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i> RTX 2060 Super
+              </span>
+              <span class="flex items-center gap-1 bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-700/50">
+                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-pink-400"></i> Unfiltered 18+
+              </span>
+            </div>
+          </div>
+          <!-- Background Glow -->
+          <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-pink-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 mb-6">
+          <!-- Search Input -->
+          <div class="relative flex-1 max-w-md">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input 
+              type="text" 
+              id="character-search" 
+              placeholder="Search characters by name, traits, or tags..." 
+              oninput="app.filterCharacters()"
+              class="w-full bg-[#121927] border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 transition"
+            >
+          </div>
+
+          <!-- Category Filter Pills -->
+          <div class="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none" id="category-pills">
+            <button onclick="app.setTagFilter('all')" class="category-btn active px-3.5 py-1.5 rounded-full text-xs font-medium bg-pink-500/20 text-pink-400 border border-pink-500/40">
+              All
+            </button>
+            <button onclick="app.setTagFilter('18+ Uncensored')" class="category-btn px-3.5 py-1.5 rounded-full text-xs font-medium bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:border-pink-500/40">
+              🔥 18+ Uncensored
+            </button>
+            <button onclick="app.setTagFilter('Romance')" class="category-btn px-3.5 py-1.5 rounded-full text-xs font-medium bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:border-pink-500/40">
+              💖 Romance
+            </button>
+            <button onclick="app.setTagFilter('Fantasy')" class="category-btn px-3.5 py-1.5 rounded-full text-xs font-medium bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:border-pink-500/40">
+              ⚔️ Fantasy
+            </button>
+            <button onclick="app.setTagFilter('Tsundere')" class="category-btn px-3.5 py-1.5 rounded-full text-xs font-medium bg-slate-800/80 text-slate-300 border border-slate-700/60 hover:border-pink-500/40">
+              💢 Tsundere
+            </button>
+          </div>
+        </div>
+
+        <!-- Character Grid -->
+        <div id="character-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12">
+          <!-- Dynamically populated -->
+        </div>
+
+      </div>
+
+      <!-- ============================================================ -->
+      <!-- CHAT VIEW: CHAT + MEDIUM SIDE PIC & DETAILS -->
+      <!-- ============================================================ -->
+      <div id="view-chat" class="hidden h-full flex overflow-hidden w-full">
+        
+        <!-- ============================================================ -->
+        <!-- LEFT: LARGE CHARACTER PORTRAIT & DETAILS (70-80% HEIGHT) -->
+        <!-- ============================================================ -->
+        <aside id="chat-character-panel" class="w-80 sm:w-96 lg:w-[420px] xl:w-[460px] flex-shrink-0 border-r border-slate-800/80 bg-[#0c1220]/95 flex flex-col h-full overflow-y-auto p-4 space-y-3 z-10 transition-all duration-300">
+          
+          <!-- Large Character Portrait Card (Dominates 70-75% of vertical space) -->
+          <div class="relative w-full h-[66vh] sm:h-[70vh] lg:h-[72vh] rounded-2xl overflow-hidden border border-pink-500/30 shadow-2xl group flex-shrink-0 bg-slate-950">
+            <img id="side-char-avatar" src="" alt="Character Portrait" class="w-full h-full object-cover object-top group-hover:scale-105 transition duration-500">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#0c1220] via-transparent to-black/30"></div>
+            
+            <!-- Badges on image -->
+            <div class="absolute top-3 left-3 flex flex-wrap gap-1.5" id="side-char-tags">
+              <!-- Injected by JS -->
+            </div>
+            
+            <!-- Name & Tagline overlaid over bottom of large portrait -->
+            <div class="absolute bottom-4 left-4 right-4 space-y-1">
+              <h3 id="side-char-name" class="text-2xl font-extrabold text-white drop-shadow-lg tracking-tight"></h3>
+              <p id="side-char-tagline" class="text-xs sm:text-sm text-pink-300 font-medium drop-shadow leading-relaxed line-clamp-2"></p>
+            </div>
+          </div>
+
+          <!-- Creator Name Pill ("creator name") -->
+          <div class="flex items-center justify-between px-3.5 py-2 rounded-xl bg-slate-900/90 border border-slate-800 text-xs flex-shrink-0">
+            <span class="text-slate-400 flex items-center gap-1.5 font-medium">
+              <i data-lucide="user-check" class="w-3.5 h-3.5 text-pink-400"></i>
+              Creator:
+            </span>
+            <span id="side-char-creator" class="font-semibold text-pink-300">You</span>
+          </div>
+
+          <!-- Character Detail ("Ch. Detail") -->
+          <div class="space-y-2 flex-shrink-0">
+            <!-- Personality Details Card -->
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
+              <div class="flex items-center gap-1.5 text-[11px] font-bold text-purple-400 uppercase tracking-wider">
+                <i data-lucide="sparkles" class="w-3 h-3"></i>
+                <span>Personality</span>
+              </div>
+              <p id="side-char-personality" class="text-xs text-slate-300 leading-relaxed"></p>
+            </div>
+
+            <!-- Scenario / Lore Card -->
+            <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 space-y-1">
+              <div class="flex items-center gap-1.5 text-[11px] font-bold text-pink-400 uppercase tracking-wider">
+                <i data-lucide="map-pin" class="w-3 h-3"></i>
+                <span>Scenario &amp; Setting</span>
+              </div>
+              <p id="side-char-scenario" class="text-xs text-slate-300 leading-relaxed italic"></p>
+            </div>
+          </div>
+
+          <!-- Action Footer: Back Button -->
+          <div class="pt-2 mt-auto flex-shrink-0">
+            <button onclick="app.showGallery()" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-slate-700/80 text-xs text-slate-300 hover:text-white transition shadow-sm font-medium">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i> Back to All Characters
+            </button>
+          </div>
+        </aside>
+
+        <!-- ============================================================ -->
+        <!-- RIGHT: CHAT CONVERSATION AREA -->
+        <!-- ============================================================ -->
+        <div class="flex-1 min-w-0 flex flex-col h-full overflow-hidden bg-[#090d16] relative">
+          
+          <!-- Chat Header Bar -->
+          <div class="h-14 px-4 sm:px-6 flex items-center justify-between border-b border-slate-800/90 bg-[#0d1322]/90 flex-shrink-0 z-20">
+            <div class="flex items-center gap-3 min-w-0">
+              <!-- Toggle Character Panel on smaller screens -->
+              <button onclick="app.toggleSidePanel()" class="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition lg:hidden" title="Toggle Character Card">
+                <i data-lucide="panel-left" class="w-5 h-5"></i>
+              </button>
+              
+              <img id="chat-header-avatar" src="" alt="Avatar" class="w-9 h-9 rounded-full object-cover border border-pink-500/40 shadow flex-shrink-0">
+              
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <h2 id="chat-header-name" class="font-bold text-slate-100 text-sm sm:text-base truncate"></h2>
+                  <span class="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" title="Online"></span>
+                </div>
+                <p id="chat-header-tagline" class="text-xs text-slate-400 truncate"></p>
+              </div>
+            </div>
+
+            <!-- Header Controls & Mode Selector (Top Right) -->
+            <div class="flex items-center gap-2.5 flex-shrink-0">
+              
+              <!-- Mode Selector Dropdown -->
+              <div class="relative">
+                <button id="btn-mode-dropdown" onclick="app.toggleModeDropdown()" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/95 border border-slate-700/80 hover:border-pink-500/60 transition text-xs font-semibold shadow-sm group">
+                  <span id="current-mode-icon" class="text-sm">🔥</span>
+                  <div class="flex flex-col text-left leading-none">
+                    <span class="text-[9px] text-slate-400 uppercase font-mono tracking-wider">Mode</span>
+                    <span id="current-mode-label" class="text-pink-400 text-xs font-bold">Medium</span>
+                  </div>
+                  <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-slate-400 group-hover:text-pink-400 transition ml-1"></i>
+                </button>
+
+                <!-- Mode Dropdown Menu -->
+                <div id="mode-dropdown-menu" class="hidden absolute right-0 mt-2 w-80 rounded-2xl glass-panel border border-slate-700/80 bg-[#0d1424]/98 p-2 shadow-2xl z-50 space-y-1">
+                  <div class="px-2.5 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider border-b border-slate-800">
+                    Character Boundaries &amp; Behavior
+                  </div>
+
+                  <!-- Mode 1: Full Safe -->
+                  <button type="button" onclick="app.setComplianceMode('safe')" class="w-full text-left p-2.5 rounded-xl hover:bg-slate-800/80 transition flex items-start gap-2.5 group">
+                    <span class="text-base p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">🛡️</span>
+                    <div>
+                      <div class="text-xs font-bold text-slate-200 group-hover:text-emerald-400 transition flex items-center gap-1.5">
+                        Full Safe
+                        <span class="text-[9px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-mono">Safe Environment</span>
+                      </div>
+                      <div class="text-[11px] text-slate-400 leading-tight mt-0.5">Character stays completely safe, polite &amp; platonic. Rejects adult advances gently.</div>
+                    </div>
+                  </button>
+
+                  <!-- Mode 2: Slow Burn -->
+                  <button type="button" onclick="app.setComplianceMode('slow_burn')" class="w-full text-left p-2.5 rounded-xl hover:bg-slate-800/80 transition flex items-start gap-2.5 group">
+                    <span class="text-base p-1.5 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20">⏳</span>
+                    <div>
+                      <div class="text-xs font-bold text-slate-200 group-hover:text-amber-400 transition flex items-center gap-1.5">
+                        Slow Burn
+                        <span class="text-[9px] px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-mono">Hesitant / Gradual</span>
+                      </div>
+                      <div class="text-[11px] text-slate-400 leading-tight mt-0.5">Chats safe first, cautious &amp; shy. Can do adult things slowly over time after build-up.</div>
+                    </div>
+                  </button>
+
+                  <!-- Mode 3: Medium -->
+                  <button type="button" onclick="app.setComplianceMode('medium')" class="w-full text-left p-2.5 rounded-xl hover:bg-slate-800/80 transition flex items-start gap-2.5 group">
+                    <span class="text-base p-1.5 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/20">🔥</span>
+                    <div>
+                      <div class="text-xs font-bold text-slate-200 group-hover:text-pink-400 transition flex items-center gap-1.5">
+                        Medium
+                        <span class="text-[9px] px-1.5 py-0.2 rounded bg-pink-500/20 text-pink-300 font-mono">Positive &amp; Receptive</span>
+                      </div>
+                      <div class="text-[11px] text-slate-400 leading-tight mt-0.5">Handles adult talks smoothly &amp; positively. Flirtatious and receptive when you initiate.</div>
+                    </div>
+                  </button>
+
+                  <!-- Mode 4: Wild & Eager -->
+                  <button type="button" onclick="app.setComplianceMode('wild')" class="w-full text-left p-2.5 rounded-xl hover:bg-slate-800/80 transition flex items-start gap-2.5 group">
+                    <span class="text-base p-1.5 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20">💋</span>
+                    <div>
+                      <div class="text-xs font-bold text-slate-200 group-hover:text-purple-400 transition flex items-center gap-1.5">
+                        Wild &amp; Eager
+                        <span class="text-[9px] px-1.5 py-0.2 rounded bg-purple-500/20 text-purple-300 font-mono">Character Initiates</span>
+                      </div>
+                      <div class="text-[11px] text-slate-400 leading-tight mt-0.5">Character actively desires and takes initiative to do adult things passionately.</div>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Restart Chat Button -->
+              <button onclick="app.restartChat()" class="p-2 rounded-xl bg-slate-900/95 border border-slate-700/80 text-slate-400 hover:text-rose-400 hover:border-rose-500/40 transition" title="Restart / Clear Conversation">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Message Scroll Area (Roomy, perfectly formatted) -->
+          <div id="chat-messages" class="flex-1 min-w-0 overflow-y-auto space-y-4 px-4 sm:px-8 py-5">
+            <!-- Messages injected dynamically -->
+          </div>
+
+          <!-- Pinned Chat Input Area (Always visible at bottom!) -->
+          <div class="p-3 sm:p-4 border-t border-slate-800/90 bg-[#0b101c]/95 flex-shrink-0 z-20">
+            <div class="max-w-4xl mx-auto space-y-2">
+              
+              <!-- Input Meta Bar -->
+              <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+                <div class="flex items-center gap-2">
+                  <span>Chatting as:</span>
+                  <input 
+                    type="text" 
+                    id="user-persona-name" 
+                    value="You" 
+                    class="bg-slate-900 border border-slate-700 rounded px-2 py-0.5 text-xs text-pink-400 font-semibold focus:outline-none focus:border-pink-500 w-28"
+                    title="Your display name"
+                  >
+                </div>
+                <div class="flex items-center gap-3">
+                  <span class="text-[11px] text-slate-500 hidden md:inline">
+                    <strong class="text-purple-300 font-mono">*action*</strong> for actions &nbsp;|&nbsp; <strong class="text-slate-200 font-mono">"dialogue"</strong> for speech
+                  </span>
+                  <button id="btn-stop-stream" onclick="app.stopStreaming()" class="hidden text-xs text-rose-400 hover:text-rose-300 flex items-center gap-1 font-medium bg-rose-500/10 px-2.5 py-1 rounded-lg border border-rose-500/20">
+                    <i data-lucide="square" class="w-3 h-3 fill-rose-400"></i> Stop
+                  </button>
+                </div>
+              </div>
+
+              <!-- Textarea & Send Button -->
+              <div class="relative flex items-end gap-2 bg-[#121929] border border-slate-800 rounded-2xl p-2 focus-within:border-pink-500/60 focus-within:ring-1 focus-within:ring-pink-500/40 transition shadow-inner">
+                <textarea 
+                  id="chat-input" 
+                  rows="1" 
+                  placeholder="Type your message or action here... (*whispers* What are you thinking?)" 
+                  onkeydown="app.handleInputKey(event)"
+                  oninput="app.autoResizeTextarea(this)"
+                  class="flex-1 max-h-36 bg-transparent text-sm text-slate-100 placeholder-slate-500 focus:outline-none resize-none py-1.5 px-3 min-h-[38px]"
+                ></textarea>
+                
+                <button 
+                  id="btn-send" 
+                  onclick="app.sendMessage()" 
+                  class="p-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white hover:from-pink-600 hover:to-purple-700 transition shadow-lg shadow-pink-500/25 active:scale-95 disabled:opacity-50 flex-shrink-0"
+                  title="Send message"
+                >
+                  <i data-lucide="send" class="w-4 h-4"></i>
+                </button>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODAL: CREATE CHARACTER STUDIO -->
+  <!-- ============================================================ -->
+  <div id="modal-create-char" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+    <div class="relative w-full max-w-xl glass-panel rounded-2xl border border-slate-800 bg-[#0d1322] p-6 shadow-2xl my-8">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-pink-500/20 text-pink-400 flex items-center justify-center border border-pink-500/30">
+            <i data-lucide="sparkles" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-lg font-bold text-slate-100">Character Studio</h3>
+        </div>
+        <button onclick="app.closeCreateCharacterModal()" class="text-slate-400 hover:text-white p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Create Character Form -->
+      <form id="form-create-character" onsubmit="app.handleCreateCharacter(event)" class="space-y-4">
+        
+        <!-- Avatar Upload & Live Preview -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Character Avatar / Portrait Image</label>
+          <div class="flex items-center gap-4">
+            <div class="relative w-20 h-24 rounded-2xl overflow-hidden bg-slate-900 border-2 border-dashed border-slate-700 flex items-center justify-center flex-shrink-0 group">
+              <img id="avatar-preview" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80" alt="Preview" class="w-full h-full object-cover">
+              <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white pointer-events-none">
+                <i data-lucide="camera" class="w-5 h-5"></i>
+              </div>
+            </div>
+            <div class="flex-1 space-y-2">
+              <input 
+                type="file" 
+                id="char-avatar-file" 
+                accept="image/*" 
+                onchange="app.handleAvatarFileSelect(event)"
+                class="block w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-purple-600/30 file:text-purple-300 hover:file:bg-purple-600/50 cursor-pointer"
+              >
+              <input 
+                type="text" 
+                id="char-avatar-url" 
+                placeholder="Or paste an image web URL..." 
+                oninput="app.handleAvatarUrlInput(this.value)"
+                class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-pink-500"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Name, Creator & Tags -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Name *</label>
+            <input 
+              type="text" 
+              id="char-name" 
+              required 
+              placeholder="e.g. Mia Valencia" 
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Creator</label>
+            <input 
+              type="text" 
+              id="char-creator" 
+              placeholder="e.g. You / Community" 
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Tags (Comma separated)</label>
+            <input 
+              type="text" 
+              id="char-tags" 
+              placeholder="18+ Uncensored, Romance" 
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500"
+            >
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Tagline (One-line description) *</label>
+          <input 
+            type="text" 
+            id="char-tagline" 
+            required 
+            placeholder="e.g. Your alluring gothic neighbor who visits uninvited." 
+            class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-sm text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500"
+          >
+        </div>
+
+        <!-- Greeting / First Message -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">
+            First Message / Greeting * 
+            <span class="text-slate-500 font-normal">(What the character says to start the chat)</span>
+          </label>
+          <textarea 
+            id="char-greeting" 
+            rows="3" 
+            required
+            placeholder="*She steps into your room unannounced, gently locking the door behind her.* &quot;Did you miss me?&quot;" 
+            class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500"
+          ></textarea>
+        </div>
+
+        <!-- Personality & Scenario -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Personality Traits</label>
+            <textarea 
+              id="char-personality" 
+              rows="3" 
+              placeholder="Flirtatious, possessive, sweet in private, speaks softly with a seductive tone." 
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500"
+            ></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Scenario / Setting</label>
+            <textarea 
+              id="char-scenario" 
+              rows="3" 
+              placeholder="A stormy night inside {{user}}'s apartment with candle light." 
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div class="pt-2 flex justify-end gap-3">
+          <button 
+            type="button" 
+            onclick="app.closeCreateCharacterModal()" 
+            class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-800 transition"
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            id="btn-create-submit"
+            class="px-5 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition shadow-lg shadow-pink-500/25"
+          >
+            Create Character
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODAL: AI ENGINE SETTINGS (LOCAL RTX vs CLOUD APIS) -->
+  <!-- ============================================================ -->
+  <div id="modal-settings" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
+    <div class="relative w-full max-w-xl glass-panel rounded-2xl border border-slate-800 bg-[#0d1322] p-6 shadow-2xl my-8 space-y-5">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between border-b border-slate-800 pb-3.5">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-500/20 to-purple-600/20 text-pink-400 flex items-center justify-center border border-pink-500/30">
+            <i data-lucide="cpu" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-slate-100">AI Engine &amp; Provider Settings</h3>
+            <p class="text-[11px] text-slate-400">Run locally on your GPU or connect to high-speed cloud APIs</p>
+          </div>
+        </div>
+        <button onclick="app.closeSettingsModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Mode Selector Tabs (Local vs Cloud) -->
+      <div class="grid grid-cols-2 p-1 rounded-xl bg-slate-900 border border-slate-800 gap-1">
+        <button type="button" id="tab-provider-local" onclick="app.selectSettingsProviderTab('local')" class="py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow">
+          <i data-lucide="hard-drive" class="w-4 h-4"></i>
+          <span>Local AI (KoboldCpp)</span>
+        </button>
+        <button type="button" id="tab-provider-cloud" onclick="app.selectSettingsProviderTab('cloud')" class="py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 text-slate-400 hover:text-white">
+          <i data-lucide="cloud" class="w-4 h-4"></i>
+          <span>Cloud AI (OpenRouter, etc.)</span>
+        </button>
+      </div>
+
+      <!-- LOCAL PROVIDER PANEL -->
+      <div id="panel-settings-local" class="space-y-4">
+        <div class="p-3.5 rounded-xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 space-y-1.5 leading-relaxed">
+          <div class="flex items-center gap-1.5 text-emerald-400 font-bold">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>100% Free &amp; Private (GPU Accelerated)</span>
+          </div>
+          <p class="text-slate-400 text-[11px]">
+            Your chats are generated completely on your machine using your RTX GPU. No internet required, zero censorship, zero subscriptions.
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">KoboldCpp Endpoint URL</label>
+          <input 
+            type="text" 
+            id="setting-local-url" 
+            value="http://localhost:5001/v1"
+            placeholder="http://localhost:5001/v1" 
+            class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 font-mono"
+          >
+          <p class="text-[10px] text-slate-500 mt-1">Default is <code class="text-pink-300">http://localhost:5001/v1</code> when KoboldCpp is running.</p>
+        </div>
+      </div>
+
+      <!-- CLOUD PROVIDER PANEL -->
+      <div id="panel-settings-cloud" class="hidden space-y-4">
+        <!-- Cloud Provider Selector -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Select Cloud Provider</label>
+          <select 
+            id="setting-cloud-provider" 
+            onchange="app.handleCloudProviderChange(this.value)"
+            class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pink-500"
+          >
+            <option value="openrouter">OpenRouter (Recommended - Top Uncensored Models)</option>
+            <option value="groq">Groq (Ultra-Fast Token Streaming)</option>
+            <option value="together">Together AI (Open-Source Models)</option>
+            <option value="custom">Custom OpenAI-Compatible Endpoint</option>
+          </select>
+        </div>
+
+        <!-- OpenRouter Section -->
+        <div id="cloud-section-openrouter" class="space-y-3">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-semibold text-slate-300">OpenRouter API Key *</label>
+              <a href="https://openrouter.ai/keys" target="_blank" class="text-[11px] text-pink-400 hover:underline flex items-center gap-1">
+                Get an API key <i data-lucide="external-link" class="w-3 h-3"></i>
+              </a>
+            </div>
+            <div class="relative">
+              <input 
+                type="password" 
+                id="setting-openrouter-key" 
+                placeholder="sk-or-v1-..." 
+                class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 font-mono pr-10"
+              >
+              <button type="button" onclick="app.togglePasswordVisibility('setting-openrouter-key')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300">
+                <i data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Roleplay Model Selection</label>
+            <select 
+              id="setting-openrouter-model-preset" 
+              onchange="app.handleOpenRouterPresetChange(this.value)"
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-pink-500 mb-1.5"
+            >
+              <option value="sao10k/l3-8b-stheno-v3.2">sao10k/l3-8b-stheno-v3.2 (Top 8B Roleplay)</option>
+              <option value="gryphe/mythomax-l2-13b">gryphe/mythomax-l2-13b (Classic Uncensored 13B)</option>
+              <option value="sao10k/l3-euryale-70b">sao10k/l3-euryale-70b (High Intelligence 70B)</option>
+              <option value="nousresearch/nous-hermes-2-mixtral-8x7b-dpo">nousresearch/nous-hermes-2-mixtral-8x7b-dpo (Mixtral 8x7B)</option>
+              <option value="meta-llama/llama-3.1-8b-instruct:free">meta-llama/llama-3.1-8b-instruct:free (100% Free on OpenRouter)</option>
+              <option value="custom">Custom Model Name...</option>
+            </select>
+            <input 
+              type="text" 
+              id="setting-openrouter-model" 
+              value="sao10k/l3-8b-stheno-v3.2" 
+              placeholder="e.g. sao10k/l3-8b-stheno-v3.2" 
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 placeholder-slate-600 focus:outline-none focus:border-pink-500 font-mono"
+            >
+          </div>
+        </div>
+
+        <!-- Groq Section -->
+        <div id="cloud-section-groq" class="hidden space-y-3">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-semibold text-slate-300">Groq API Key *</label>
+              <a href="https://console.groq.com/keys" target="_blank" class="text-[11px] text-pink-400 hover:underline flex items-center gap-1">
+                Get free Groq key <i data-lucide="external-link" class="w-3 h-3"></i>
+              </a>
+            </div>
+            <input 
+              type="password" 
+              id="setting-groq-key" 
+              placeholder="gsk_..." 
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 font-mono"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Model Name</label>
+            <input 
+              type="text" 
+              id="setting-groq-model" 
+              value="llama-3.1-70b-versatile" 
+              placeholder="llama-3.1-70b-versatile" 
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 font-mono"
+            >
+          </div>
+        </div>
+
+        <!-- Together AI Section -->
+        <div id="cloud-section-together" class="hidden space-y-3">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs font-semibold text-slate-300">Together AI Key *</label>
+              <a href="https://api.together.ai/settings/api-keys" target="_blank" class="text-[11px] text-pink-400 hover:underline flex items-center gap-1">
+                Get Together key <i data-lucide="external-link" class="w-3 h-3"></i>
+              </a>
+            </div>
+            <input 
+              type="password" 
+              id="setting-together-key" 
+              placeholder="..." 
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 font-mono"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Model Name</label>
+            <input 
+              type="text" 
+              id="setting-together-model" 
+              value="NousResearch/Nous-Hermes-2-Mixtral-8x7B-DPO" 
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 font-mono"
+            >
+          </div>
+        </div>
+
+        <!-- Custom Section -->
+        <div id="cloud-section-custom" class="hidden space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">API Base URL *</label>
+            <input 
+              type="text" 
+              id="setting-custom-url" 
+              placeholder="https://api.openai.com/v1" 
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 font-mono"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">API Key (optional)</label>
+            <input 
+              type="password" 
+              id="setting-custom-key" 
+              placeholder="Bearer Token..." 
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-pink-500 font-mono"
+            >
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Model ID</label>
+            <input 
+              type="text" 
+              id="setting-custom-model" 
+              placeholder="e.g. gpt-4o, mistralai/mistral-7b" 
+              class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-slate-200 font-mono"
+            >
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Test Status Banner -->
+      <div id="settings-test-status" class="hidden p-3 rounded-xl text-xs font-medium border flex items-center gap-2"></div>
+
+      <!-- Modal Footer -->
+      <div class="pt-2 flex items-center justify-between border-t border-slate-800">
+        <button 
+          type="button" 
+          onclick="app.testSettingsConnection()" 
+          id="btn-settings-test"
+          class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 transition"
+        >
+          <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i> Test Connection
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button 
+            type="button" 
+            onclick="app.closeSettingsModal()" 
+            class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white bg-slate-800/80 hover:bg-slate-800 transition"
+          >
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            onclick="app.saveSettings()" 
+            id="btn-settings-save"
+            class="px-5 py-2 rounded-xl text-xs font-semibold text-white bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 transition shadow-lg shadow-pink-500/25"
+          >
+            Save &amp; Apply
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- App Script -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: cheekychat
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AI_PROVIDER
+        value: openrouter
+      - key: OPENROUTER_MODEL
+        value: sao10k/l3-8b-stheno-v3.2
+      # Set OPENROUTER_API_KEY in Render Dashboard Environment settings
